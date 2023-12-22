@@ -220,3 +220,15 @@ void print_candidate_num(SudokuBoard *p_board)
         printf("\n");
     }
 }
+bool cell_same_unit(Cell *cell1, Cell *cell2)
+{
+    return (cell1->row_index == cell2->row_index) || (cell1->col_index == cell2->col_index) || (cell1->box_index == cell2->box_index);
+}
+bool isElementPresent(int element, int *array, int size) {
+    for (int i = 0; i < size; i++) {
+        if (array[i] == element) {
+            return true;
+        }
+    }
+    return false;
+}
