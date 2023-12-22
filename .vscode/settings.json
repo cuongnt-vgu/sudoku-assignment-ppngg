@@ -26,6 +26,7 @@
         "streambuf": "c",
         "string_view": "c",
         "utility": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "sudoku.h": "c"
     }
 }

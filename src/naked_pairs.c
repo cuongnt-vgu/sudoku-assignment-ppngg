@@ -1,10 +1,6 @@
 #include "naked_pairs.h"
 #include <stdlib.h>
 
-bool cell_same_unit(Cell *cell1, Cell *cell2)
-{
-    return (cell1->row_index == cell2->row_index) || (cell1->col_index == cell2->col_index) || (cell1->box_index == cell2->box_index);
-}
 int find_naked_pair_values(Cell **p_cells, int *naked_pair_values)
 {
     int counter = 0;
@@ -12,7 +8,7 @@ int find_naked_pair_values(Cell **p_cells, int *naked_pair_values)
     {
         for (int j = i + 1; j < BOARD_SIZE; j++)
         {
-            if (p_cells[i]->num_candidates == 2 && p_cells[j]->num_candidates == 2)
+            if (p_cells[i]->num_candidates == 2 && p_cells[j]->num_candidates == 2 && !p_cells[i]->processed && !p_cells[j]->processed)
             {
                 int *candidates1 = get_candidates(p_cells[i]);
                 int *candidates2 = get_candidates(p_cells[j]);
@@ -20,6 +16,8 @@ int find_naked_pair_values(Cell **p_cells, int *naked_pair_values)
                 {
                     naked_pair_values[counter++] = candidates1[0];
                     naked_pair_values[counter++] = candidates1[1];
+                    p_cells[i]->processed = true;
+                    p_cells[j]->processed = true;
                 }
                 free(candidates1);
                 free(candidates2);
@@ -98,24 +96,24 @@ void find_naked_pair(Cell **p_cells, NakedPair *naked_pairs, int *p_counter)
 int naked_pairs(SudokuBoard *p_board)
 {
     NakedPair naked_pairs[BOARD_SIZE * 2];
-    int counter = 0;
+    int count = 0;
 
     // Check rows
     for (int i = 0; i < BOARD_SIZE; i++)
     {
-        find_naked_pair(p_board->p_rows[i], naked_pairs, &counter);
+        find_naked_pair(p_board->p_rows[i], naked_pairs, &count);
     }
 
     // Check columns
     for (int i = 0; i < BOARD_SIZE; i++)
     {
-        find_naked_pair(p_board->p_cols[i], naked_pairs, &counter);
+        find_naked_pair(p_board->p_cols[i], naked_pairs, &count);
     }
 
     // Check boxes
     for (int i = 0; i < BOARD_SIZE; i++)
     {
-        find_naked_pair(p_board->p_boxes[i], naked_pairs, &counter);
+        find_naked_pair(p_board->p_boxes[i], naked_pairs, &count);
     }
-    return counter;
+    return count;
 }
