@@ -1,15 +1,17 @@
 #include "naked_triples.h"
 
+bool isElementPresent(int element, int *array, int size) {
+    for (int i = 0; i < size; i++) {
+        if (array[i] == element) {
+            return true;
+        }
+    }
+    return false;
+}
+
 int find_naked_triple_values(Cell **p_cells, int *naked_triple_values)
 {
     int counter = 0;
-    /*
-    (123) (123) (123) - {3/3/3} (in terms of candidates per cell)
-    (123) (123) (12) - {3/3/2} (or some combination thereof)
-    (123) (12) (23) - {3/2/2}
-    (12) (23) (13) - {2/2/2}
-    */
-    // Case 1: (123) (123) (123)
     for (int i = 0; i < BOARD_SIZE; i++){
         if(p_cells[i]->num_candidates > 1 && p_cells[i]->num_candidates < 4)
         {
@@ -30,8 +32,13 @@ int find_naked_triple_values(Cell **p_cells, int *naked_triple_values)
                 }
             }
         }
-}
+    }
     return counter;
 }
-void find_naked_triple(Cell **p_cells, naked *naked_pairs, int *p_counter);
-int naked_triples(SudokuBoard *p_board);
+void find_naked_triple(Cell **p_cells, NakedTriple *naked_pairs, int *p_counter)
+{
+    return;
+}
+int naked_triples(SudokuBoard *p_board){
+    return 0;
+}
