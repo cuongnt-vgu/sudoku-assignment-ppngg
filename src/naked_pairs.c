@@ -74,7 +74,7 @@ void find_naked_pair(Cell **p_cells, NakedPair *naked_pairs, int *p_counter)
                             int num = p_cells[j]->num_candidates;
                             for (int k = 0; k < num; k++)
                             {
-                                if (cnd[k] == naked_pairs[i].values[0] && !p_cells[j]->processed)
+                                if (cnd[k] == naked_pairs[i].values[0])
                                 {
                                     unset_candidate(p_cells[j], cnd[k]);
                                     p_cells[j]->processed = true;
