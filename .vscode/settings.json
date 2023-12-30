@@ -27,6 +27,7 @@
         "string_view": "c",
         "utility": "c",
         "typeinfo": "c",
-        "sudoku.h": "c"
+        "sudoku.h": "c",
+        "naked_triples.h": "c"
     }
 }

@@ -10,6 +10,8 @@ typedef struct NakedTriple_impl
     int values[3];
 } NakedTriple;
 bool isElementPresent(int element, int *array, int size);
-int find_naked_triple_values(Cell **p_cells, int *naked_triple_values);
-void find_naked_triple(Cell **p_cells, NakedTriple *naked_pairs, int *p_counter);
+void generateCombinations(int n, int ***combinations, int *combinationsCount);
+void freeCombinations(int ***combinations, int combinationsCount);
+int find_naked_triple_values(Cell **p_cells, int *naked_triple_values, int **combinations, int combinationsCount);
+void find_naked_triple(Cell **p_cells, NakedTriple *naked_pairs, int *p_counter, int **combinations, int combinationsCount);
 int naked_triples(SudokuBoard *p_board);

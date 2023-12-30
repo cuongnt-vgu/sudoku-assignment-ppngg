@@ -12,61 +12,86 @@ bool isElementPresent(int element, int *array, int size)
     }
     return false;
 }
+void generateCombinations(int n, int ***combinations, int *combinationsCount)
+{
+    // Calculate the number of combinations
+    *combinationsCount = n * (n - 1) * (n - 2) / 6;
 
-int find_naked_triple_values(Cell **p_cells, int *naked_triple_values)
+    // Allocate memory for the array of combinations
+    *combinations = (int **)(malloc(*combinationsCount * sizeof(int *)));
+    for (int i = 0; i < *combinationsCount; ++i)
+    {
+        (*combinations)[i] = (int *)(malloc(3 * sizeof(int)));
+    }
+
+    // Generate and store combinations
+    int index = 0;
+    for (int i = 1; i <= n; ++i)
+    {
+        for (int j = i + 1; j <= n; ++j)
+        {
+            for (int k = j + 1; k <= n; ++k)
+            {
+                // Store the combination in the array
+                (*combinations)[index][0] = i;
+                (*combinations)[index][1] = j;
+                (*combinations)[index][2] = k;
+                index++;
+            }
+        }
+    }
+}
+
+void freeCombinations(int ***combinations, int combinationsCount)
+{
+    // Free memory for the array of combinations
+    for (int i = 0; i < combinationsCount; ++i)
+    {
+        free((*combinations)[i]);
+    }
+    free(*combinations);
+}
+
+int find_naked_triple_values(Cell **p_cells, int *naked_triple_values, int **combinations, int combinationsCount)
 {
     int counter = 0;
-    for (int i = 0; i < BOARD_SIZE; i++)
-    {
 
-        if (p_cells[i]->num_candidates > 1 && p_cells[i]->num_candidates < 4)
+    for (int combo = 0; combo < combinationsCount; combo++)
+    {
+        for (int i = 0; i < BOARD_SIZE - 2; i++)
         {
-            for (int j = i + 1; j < BOARD_SIZE; j++)
+            if (p_cells[i]->num_candidates > 1 && p_cells[i]->num_candidates < 4)
             {
-                if (p_cells[j]->num_candidates > 1 && p_cells[j]->num_candidates < 4)
+                for (int j = i + 1; j < BOARD_SIZE - 1; j++)
                 {
-                    for (int k = j + 1; k < BOARD_SIZE; k++)
+                    if (p_cells[j]->num_candidates > 1 && p_cells[j]->num_candidates < 4)
                     {
-                        int combo[BOARD_SIZE] = {0};
-                        int index = 0;
-                        if (p_cells[k]->num_candidates > 1 && p_cells[k]->num_candidates < 4 && !p_cells[i]->processed && !p_cells[j]->processed && !p_cells[k]->processed)
+                        for (int k = j + 1; k < BOARD_SIZE; k++)
                         {
-                            int *candidates = get_candidates(p_cells[i]);
-                            for (int c1 = 0, len1 = p_cells[i]->num_candidates; c1 < len1; c1++)
+                            if (p_cells[k]->num_candidates > 1 && p_cells[k]->num_candidates < 4) //&& !p_cells[i]->processed && !p_cells[j]->processed && !p_cells[k]->processed)
                             {
-                                if (!isElementPresent(candidates[c1], combo, BOARD_SIZE))
+                                int match1 = 0, match2 = 0, match3 = 0;
+
+                                // Check candidates for each cell in the combination
+                                match1 += is_candidate(p_cells[i], combinations[combo][0]);
+                                match1 += is_candidate(p_cells[i], combinations[combo][1]);
+                                match1 += is_candidate(p_cells[i], combinations[combo][2]);
+
+                                match2 += is_candidate(p_cells[j], combinations[combo][0]);
+                                match2 += is_candidate(p_cells[j], combinations[combo][1]);
+                                match2 += is_candidate(p_cells[j], combinations[combo][2]);
+
+                                match3 += is_candidate(p_cells[k], combinations[combo][0]);
+                                match3 += is_candidate(p_cells[k], combinations[combo][1]);
+                                match3 += is_candidate(p_cells[k], combinations[combo][2]);
+
+
+                                // Check if each candidate appears at least twice
+                                if ((match1 + match2 + match3) >= (p_cells[i]->num_candidates + p_cells[j]->num_candidates + p_cells[k]->num_candidates))
                                 {
-                                    combo[index++] = candidates[c1];
-                                }
-                            }
-                            candidates = get_candidates(p_cells[j]);
-                            for (int c2 = 0, len2 = p_cells[j]->num_candidates; c2 < len2; c2++)
-                            {
-                                if (!isElementPresent(candidates[c2], combo, BOARD_SIZE))
-                                {
-                                    combo[index++] = candidates[c2];
-                                }
-                            }
-                            candidates = get_candidates(p_cells[k]);
-                            for (int c3 = 0, len3 = p_cells[k]->num_candidates; c3 < len3; c3++)
-                            {
-                                if (!isElementPresent(candidates[c3], combo, BOARD_SIZE))
-                                {
-                                    combo[index++] = candidates[c3];
-                                }
-                            }
-                            
-                            free(candidates);
-                            //free(candidates1);
-                            //free(candidates2);
-                            if (index == 3)
-                            {
-                                for (int t = 0; t < index; t++)
-                                {
-                                    p_cells[i]->processed = true;
-                                    p_cells[j]->processed = true;
-                                    p_cells[k]->processed = true;
-                                    naked_triple_values[counter++] = combo[t];
+                                    naked_triple_values[counter++] = combinations[combo][0];
+                                    naked_triple_values[counter++] = combinations[combo][1];
+                                    naked_triple_values[counter++] = combinations[combo][2];
                                 }
                             }
                         }
@@ -79,10 +104,10 @@ int find_naked_triple_values(Cell **p_cells, int *naked_triple_values)
     return counter;
 }
 
-void find_naked_triple(Cell **p_cells, NakedTriple *naked_triples, int *p_counter)
+void find_naked_triple(Cell **p_cells, NakedTriple *naked_triples, int *p_counter, int **combinations, int combinationsCount)
 {
-    int naked_triple_values[BOARD_SIZE*BOARD_SIZE];
-    int naked_triple_count = find_naked_triple_values(p_cells, naked_triple_values);
+    int naked_triple_values[BOARD_SIZE * BOARD_SIZE];
+    int naked_triple_count = find_naked_triple_values(p_cells, naked_triple_values, combinations, combinationsCount);
     for (int i = 0; i < naked_triple_count; i += 3)
     {
         int value1 = naked_triple_values[i];
@@ -101,7 +126,7 @@ void find_naked_triple(Cell **p_cells, NakedTriple *naked_triples, int *p_counte
                         {
                             if (p_cells[l]->num_candidates > 1 && p_cells[l]->num_candidates < 4 && !p_cells[j]->processed && !p_cells[k]->processed && !p_cells[l]->processed)
                             {
-                                // Check if 3 cells has 2/3 candidates that match with value1, value2 or value3
+                                // match if 3 cells has 2/3 candidates that match with value1, value2 or value3
                                 int c, len, match;
                                 bool flag1 = false;
                                 bool flag2 = false;
@@ -171,34 +196,34 @@ void find_naked_triple(Cell **p_cells, NakedTriple *naked_triples, int *p_counte
             }
         }
     }
-    // Check for non naked triple cells then remove
+    // match for non naked triple cells then remove
     for (int i = 0; i < *p_counter; i++)
     {
         for (int j = 0; j < BOARD_SIZE; j++)
         {
-            if (p_cells[j]->num_candidates > 1 && p_cells[j]->num_candidates < 4)
+            if (p_cells[j]->num_candidates > 1)
             {
                 // Skip naked triple cells
                 if (p_cells[j] != naked_triples[i].p_cell1 && p_cells[j] != naked_triples[i].p_cell2 && p_cells[j] != naked_triples[i].p_cell3)
                 {
-                    // Check if they are in the same row, same column or same box
+                    // match if they are in the same row, same column or same box
                     if (cell_same_unit(p_cells[j], naked_triples[i].p_cell1) &&
                         cell_same_unit(p_cells[j], naked_triples[i].p_cell2) && cell_same_unit(p_cells[j], naked_triples[i].p_cell3) && !p_cells[j]->processed)
                     {
                         // Unset candidates
-                        if (is_candidate(p_cells[j], naked_triple_values[0]))
+                        if (is_candidate(p_cells[j], naked_triples[i].values[0]))
                         {
                             unset_candidate(p_cells[j], naked_triples[i].values[0]);
                             p_cells[j]->processed = true;
                         }
-                        if (is_candidate(p_cells[j], naked_triple_values[1]))
+                        if (is_candidate(p_cells[j], naked_triples[i].values[1]))
                         {
-                            unset_candidate(p_cells[j], naked_triple_values[1]);
+                            unset_candidate(p_cells[j], naked_triples[i].values[1]);
                             p_cells[j]->processed = true;
                         }
-                        if (is_candidate(p_cells[j], naked_triple_values[2]))
+                        if (is_candidate(p_cells[j], naked_triples[i].values[2]))
                         {
-                            unset_candidate(p_cells[j], naked_triple_values[2]);
+                            unset_candidate(p_cells[j], naked_triples[i].values[2]);
                             p_cells[j]->processed = true;
                         }
                     }
@@ -211,24 +236,30 @@ int naked_triples(SudokuBoard *p_board)
 {
     NakedTriple naked_triples[BOARD_SIZE * BOARD_SIZE];
     int total_naked_triples = 0;
+    int **combinations;
+    int combinationsCount;
+    generateCombinations(BOARD_SIZE, &combinations, &combinationsCount);
 
-    // Check rows for naked triples
+    // match rows for naked triples
     for (int i = 0; i < BOARD_SIZE; i++)
     {
-        find_naked_triple(p_board->p_rows[i], naked_triples, &total_naked_triples);
+        find_naked_triple(p_board->p_rows[i], naked_triples, &total_naked_triples, combinations, combinationsCount);
     }
 
-    // Check columns for naked triples
+    // match columns for naked triples
     for (int j = 0; j < BOARD_SIZE; j++)
     {
-        find_naked_triple(p_board->p_cols[j], naked_triples, &total_naked_triples);
+        find_naked_triple(p_board->p_cols[j], naked_triples, &total_naked_triples, combinations, combinationsCount);
     }
 
-    // Check boxes for naked triples
+    // match boxes for naked triples
     for (int k = 0; k < BOARD_SIZE; k++)
     {
-        find_naked_triple(p_board->p_boxes[k], naked_triples, &total_naked_triples);
+        find_naked_triple(p_board->p_boxes[k], naked_triples, &total_naked_triples, combinations, combinationsCount);
     }
+
+    // Free the allocated memory
+    freeCombinations(&combinations, combinationsCount);
 
     return total_naked_triples;
 }
